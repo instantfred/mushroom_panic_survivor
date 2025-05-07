@@ -4,5 +4,3 @@ __pycache__/
 .DS_Store
 *.log
 *.swp
-assets/*
-!assets/.keep     # Keep empty folders tracked

@@ -2,6 +2,7 @@ import sys
 
 import pygame
 
+from level import Level
 from player import Player
 from settings import BG_COLOR, FPS, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE
 
@@ -13,7 +14,8 @@ def main():
     pygame.display.set_caption(TITLE)
     clock = pygame.time.Clock()
 
-    # Create player loop
+    # Level and Player setup
+    level = Level(screen)
     player = Player(pos=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
     player_group = pygame.sprite.GroupSingle(player)
 
@@ -31,12 +33,9 @@ def main():
         player_group.update(dt)
 
         # 3. Draw everything
-        screen.fill(BG_COLOR)
+        level.draw_floor()
         player_group.draw(screen)
         pygame.display.flip()  # Refresh the screen
-
-        # 4. Control frame rate
-        # clock.tick(FPS)
 
     # Clean up
     pygame.quit()
