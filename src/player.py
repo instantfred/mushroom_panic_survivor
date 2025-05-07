@@ -12,6 +12,7 @@ class Player(pygame.sprite.Sprite):
         self.image = None
         self.speed = 200  # pixels per second
         self.facing_left = False
+        self.map_bounds = None  # Will be set by Level class
 
         # Load and slice animations
         self.animations = {
@@ -72,6 +73,8 @@ class Player(pygame.sprite.Sprite):
             self.status = 'walk'
             self.rect.x += direction.x * self.speed * dt
             self.rect.y += direction.y * self.speed * dt
-            self.rect.clamp_ip(pygame.Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
+            # Use map boundaries if available, otherwise fall back to screen boundaries
+            bounds = self.map_bounds if self.map_bounds else pygame.Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+            self.rect.clamp_ip(bounds)
 
         self.animate(dt)

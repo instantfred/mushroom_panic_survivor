@@ -4,7 +4,7 @@ import pygame
 
 from level import Level
 from player import Player
-from settings import FPS, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE
+from settings import FPS, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, BG_COLOR
 
 
 def main():
@@ -29,13 +29,10 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
-        # 2. Update game state
-        player_group.update(dt)
-
-        # 3. Draw everything
-        level.draw_floor()
-        player_group.draw(screen)
-        pygame.display.flip()  # Refresh the screen
+        # 2. Draw everything
+        screen.fill(BG_COLOR)
+        level.run(dt)
+        pygame.display.flip()
 
     # Clean up
     pygame.quit()
