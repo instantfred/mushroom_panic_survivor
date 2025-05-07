@@ -10,22 +10,17 @@ class Level:
     def __init__(self, surface):
         self.display_surface = surface
 
-        # Define sprite groups BEFORE build_level()
+        # Sprite groups
         self.tiles = pygame.sprite.Group()             # All terrain tiles (walls, floors, etc.)
         self.obstacle_sprites = pygame.sprite.Group()  # Collision obstacles
+        self.visible_sprites = None                    # Camera group for rendering
         self.player_sprite = None
         
         # Tile graphics
         self.ground_tile = pygame.image.load("assets/tiles/floor_01.png").convert_alpha()
         self.wall_tile = pygame.image.load("assets/tiles/wall_01.png").convert_alpha()
 
-
-        # Groups
-        self.visible_sprites = None
-        self.obstacles = pygame.sprite.Group()
-
         self.build_level()
-
 
     def build_level(self):
         # Calculate map boundaries
@@ -55,7 +50,6 @@ class Level:
         self.visible_sprites = CameraGroup(self.player_sprite)
         self.visible_sprites.add(self.player_sprite)
         self.visible_sprites.add(self.tiles)  # Add all tiles to visible sprites
-
 
     def run(self, dt):
         self.visible_sprites.update(dt)

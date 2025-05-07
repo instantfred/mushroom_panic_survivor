@@ -1,14 +1,12 @@
 import pygame
-from settings import SCREEN_HEIGHT, SCREEN_WIDTH
+from settings import SCREEN_HEIGHT, SCREEN_WIDTH, TILE_SIZE
 import os
-
-TITLE_SIZE = 48
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos, obstacles):
         super().__init__()
         self.frame_index = 0
-        self.animation_speed = 10 # Frames per second
+        self.animation_speed = 10  # Frames per second
         self.image = None
         self.speed = 200  # pixels per second
         self.facing_left = False
@@ -20,19 +18,22 @@ class Player(pygame.sprite.Sprite):
             'idle': self.load_animation('player_idle.png', 9),
             'walk': self.load_animation('player_walk.png', 4),
         }
+        # Cache flipped frames
+        self.flipped_animations = {
+            'idle': [pygame.transform.flip(frame, True, False) for frame in self.animations['idle']],
+            'walk': [pygame.transform.flip(frame, True, False) for frame in self.animations['walk']]
+        }
 
         self.status = 'idle'
         self.image = self.animations[self.status][self.frame_index]
         self.rect = self.image.get_rect(center=pos)
 
-
     def load_animation(self, filename, num_frames):
         path = os.path.join('assets', 'sprites', filename)
         sprite_sheet = pygame.image.load(path).convert_alpha()
         print(f"Loading {filename}: {sprite_sheet.get_width()}x{sprite_sheet.get_height()}")
-        return [sprite_sheet.subsurface(pygame.Rect(i * TITLE_SIZE, 0, TITLE_SIZE, TITLE_SIZE))
+        return [sprite_sheet.subsurface(pygame.Rect(i * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE))
                 for i in range(num_frames)]
-
 
     def handle_input(self):
         keys = pygame.key.get_pressed()
@@ -52,22 +53,27 @@ class Player(pygame.sprite.Sprite):
         if direction.length() > 0:
             direction = direction.normalize()
         return direction
-    
 
     def move_and_collide(self, direction, dt):
+        if direction.length() == 0:
+            return
+
         # Store original position
         original_x = self.rect.x
         original_y = self.rect.y
 
+        # Calculate movement
+        movement = direction * self.speed * dt
+
         # Try moving on X axis first
-        self.rect.x += direction.x * self.speed * dt
+        self.rect.x += movement.x
         for sprite in self.obstacles:
             if self.rect.colliderect(sprite.rect):
                 self.rect.x = original_x
                 break
 
         # Then try moving on Y axis
-        self.rect.y += direction.y * self.speed * dt
+        self.rect.y += movement.y
         for sprite in self.obstacles:
             if self.rect.colliderect(sprite.rect):
                 self.rect.y = original_y
@@ -77,19 +83,13 @@ class Player(pygame.sprite.Sprite):
         if self.map_bounds:
             self.rect.clamp_ip(self.map_bounds)
 
-    
     def animate(self, dt):
-        frames = self.animations[self.status]
+        frames = self.flipped_animations[self.status] if self.facing_left else self.animations[self.status]
         self.frame_index += self.animation_speed * dt
         if self.frame_index >= len(frames):
             self.frame_index = 0
+        self.image = frames[int(self.frame_index)]
 
-        frame = frames[int(self.frame_index)]
-        if self.facing_left:
-            frame = pygame.transform.flip(frame, True, False)
-        self.image = frame
-
-    
     def update(self, dt):
         direction = self.handle_input()
         self.status = "walk" if direction.length() > 0 else "idle"
