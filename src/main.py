@@ -4,7 +4,7 @@ import pygame
 
 from level import Level
 from player import Player
-from settings import BG_COLOR, FPS, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE
+from settings import FPS, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE
 
 
 def main():

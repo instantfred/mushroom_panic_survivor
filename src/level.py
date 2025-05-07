@@ -2,7 +2,7 @@ import pygame
 
 from settings import SCREEN_HEIGHT, SCREEN_WIDTH
 
-TILE_SIZE = 64  # Match your tile image size
+TILE_SIZE = 48
 
 
 class Level:
