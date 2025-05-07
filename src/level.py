@@ -1,10 +1,10 @@
 import pygame
 from map_layout import level_map
-from settings import TILE_SIZE, SCREEN_HEIGHT, SCREEN_WIDTH
+from settings import TILE_SIZE
 from player import Player
+from enemy import Enemy
+from camera import CameraGroup
 
-
-from settings import SCREEN_HEIGHT, SCREEN_WIDTH
 
 class Level:
     def __init__(self, surface):
@@ -15,11 +15,17 @@ class Level:
         self.obstacle_sprites = pygame.sprite.Group()  # Collision obstacles
         self.visible_sprites = None                    # Camera group for rendering
         self.player_sprite = None
+        self.enemy_sprites = pygame.sprite.Group()     # Enemy sprites
         
         # Tile graphics
         self.ground_tile = pygame.image.load("assets/tiles/floor_01.png").convert_alpha()
         self.wall_tile = pygame.image.load("assets/tiles/wall_01.png").convert_alpha()
         self.chest_tile = pygame.image.load("assets/tiles/chest_01.png").convert_alpha()
+
+        # Enemy spawning
+        self.spawn_timer = 0
+        self.spawn_cooldown = 3.0  # Spawn an enemy every 3 seconds
+        self.enemy_spawn_points = []  # Will store valid spawn positions
 
         self.build_level()
 
@@ -50,13 +56,42 @@ class Level:
                     self.player_sprite = Player((x + TILE_SIZE // 2, y + TILE_SIZE // 2), self.obstacle_sprites)
                     # Set map boundaries for player
                     self.player_sprite.map_bounds = pygame.Rect(0, 0, map_width, map_height)
+                elif cell == "E":
+                    # Store enemy spawn points
+                    self.enemy_spawn_points.append((x + TILE_SIZE // 2, y + TILE_SIZE // 2))
 
         # Camera setup after player created
         self.visible_sprites = CameraGroup(self.player_sprite)
-        self.visible_sprites.add(self.player_sprite)
-        self.visible_sprites.add(self.tiles)  # Add all tiles to visible sprites
+        # Add tiles to layer 0
+        for tile in self.tiles:
+            self.visible_sprites.add(tile, layer=0)
+
+        # Add player and enemies to layer 2
+        self.visible_sprites.add(self.player_sprite, layer=2)
+        for enemy in self.enemy_sprites:
+            self.visible_sprites.add(enemy, layer=2)
+
+    def spawn_enemy(self):
+        if not self.enemy_spawn_points:
+            return
+
+        # Choose a random spawn point
+        import random
+        spawn_pos = random.choice(self.enemy_spawn_points)
+        
+        # Create new enemy
+        enemy = Enemy(spawn_pos, self.player_sprite)
+        self.enemy_sprites.add(enemy)
+        self.visible_sprites.add(enemy, layer=2)
 
     def run(self, dt):
+        # Update spawn timer
+        self.spawn_timer += dt
+        if self.spawn_timer >= self.spawn_cooldown:
+            self.spawn_enemy()
+            self.spawn_timer = 0
+
+        # Update and draw all sprites
         self.visible_sprites.update(dt)
         self.visible_sprites.draw()
 
@@ -68,28 +103,3 @@ class Tile(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(image, (TILE_SIZE, TILE_SIZE))
         self.rect = self.image.get_rect(topleft=pos)
 
-
-class CameraGroup(pygame.sprite.Group):
-    def __init__(self, player):
-        super().__init__()
-        self.display_surface = pygame.display.get_surface()
-        self.player = player
-        self.offset = pygame.math.Vector2(0, 0)
-
-        # Optional: center offset for smooth scrolling
-        self.half_w = self.display_surface.get_size()[0] // 2
-        self.half_h = self.display_surface.get_size()[1] // 2
-
-    def draw(self):
-        self.offset.x = self.player.rect.centerx - self.half_w
-        self.offset.y = self.player.rect.centery - self.half_h
-
-        # Draw all sprites except player
-        for sprite in sorted(self.sprites(), key=lambda s: s.rect.centery):
-            if sprite != self.player:  # Skip player for now
-                offset_pos = sprite.rect.topleft - self.offset
-                self.display_surface.blit(sprite.image, offset_pos)
-        
-        # Draw player last (on top)
-        offset_pos = self.player.rect.topleft - self.offset
-        self.display_surface.blit(self.player.image, offset_pos)
