@@ -11,6 +11,7 @@ class Player(pygame.sprite.Sprite):
         self.animation_speed = 10 # Frames per second
         self.image = None
         self.speed = 200  # pixels per second
+        self.facing_left = False
 
         # Load and slice animations
         self.animations = {
@@ -40,8 +41,10 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_s] or keys[pygame.K_DOWN]:
             direction.y = 1
         if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+            self.facing_left = True
             direction.x = -1
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+            self.facing_left = False
             direction.x = 1
 
         if direction.length() > 0:
@@ -54,7 +57,11 @@ class Player(pygame.sprite.Sprite):
         self.frame_index += self.animation_speed * dt
         if self.frame_index >= len(frames):
             self.frame_index = 0
-        self.image = frames[int(self.frame_index)]
+
+        frame = frames[int(self.frame_index)]
+        if self.facing_left:
+            frame = pygame.transform.flip(frame, True, False)
+        self.image = frame
 
     
     def update(self, dt):
