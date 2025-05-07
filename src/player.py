@@ -55,17 +55,27 @@ class Player(pygame.sprite.Sprite):
     
 
     def move_and_collide(self, direction, dt):
-        original_position = self.rect.topleft
+        # Store original position
+        original_x = self.rect.x
+        original_y = self.rect.y
 
-        # Move
+        # Try moving on X axis first
         self.rect.x += direction.x * self.speed * dt
-        self.rect.y += direction.y * self.speed * dt
-
-        # Check for collision
         for sprite in self.obstacles:
             if self.rect.colliderect(sprite.rect):
-                self.rect.topleft = original_position
+                self.rect.x = original_x
                 break
+
+        # Then try moving on Y axis
+        self.rect.y += direction.y * self.speed * dt
+        for sprite in self.obstacles:
+            if self.rect.colliderect(sprite.rect):
+                self.rect.y = original_y
+                break
+
+        # Ensure we stay within map bounds
+        if self.map_bounds:
+            self.rect.clamp_ip(self.map_bounds)
 
     
     def animate(self, dt):
