@@ -14,10 +14,8 @@ def main():
     pygame.display.set_caption(TITLE)
     clock = pygame.time.Clock()
 
-    # Level and Player setup
+    # Level setup
     level = Level(screen)
-    player = Player(pos=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
-    player_group = pygame.sprite.GroupSingle(player)
 
     # Main game loop
     running = True

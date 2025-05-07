@@ -5,7 +5,7 @@ import os
 TITLE_SIZE = 48
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos):
+    def __init__(self, pos, obstacles):
         super().__init__()
         self.frame_index = 0
         self.animation_speed = 10 # Frames per second
@@ -13,6 +13,7 @@ class Player(pygame.sprite.Sprite):
         self.speed = 200  # pixels per second
         self.facing_left = False
         self.map_bounds = None  # Will be set by Level class
+        self.obstacles = obstacles
 
         # Load and slice animations
         self.animations = {
@@ -53,6 +54,20 @@ class Player(pygame.sprite.Sprite):
         return direction
     
 
+    def move_and_collide(self, direction, dt):
+        original_position = self.rect.topleft
+
+        # Move
+        self.rect.x += direction.x * self.speed * dt
+        self.rect.y += direction.y * self.speed * dt
+
+        # Check for collision
+        for sprite in self.obstacles:
+            if self.rect.colliderect(sprite.rect):
+                self.rect.topleft = original_position
+                break
+
+    
     def animate(self, dt):
         frames = self.animations[self.status]
         self.frame_index += self.animation_speed * dt
@@ -67,14 +82,6 @@ class Player(pygame.sprite.Sprite):
     
     def update(self, dt):
         direction = self.handle_input()
-        if direction.length() == 0:
-            self.status = 'idle'
-        else:
-            self.status = 'walk'
-            self.rect.x += direction.x * self.speed * dt
-            self.rect.y += direction.y * self.speed * dt
-            # Use map boundaries if available, otherwise fall back to screen boundaries
-            bounds = self.map_bounds if self.map_bounds else pygame.Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
-            self.rect.clamp_ip(bounds)
-
+        self.status = "walk" if direction.length() > 0 else "idle"
+        self.move_and_collide(direction, dt)
         self.animate(dt)

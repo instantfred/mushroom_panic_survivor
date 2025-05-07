@@ -10,9 +10,15 @@ class Level:
     def __init__(self, surface):
         self.display_surface = surface
 
+        # Define sprite groups BEFORE build_level()
+        self.tiles = pygame.sprite.Group()             # All terrain tiles (walls, floors, etc.)
+        self.obstacle_sprites = pygame.sprite.Group()  # Collision obstacles
+        self.player_sprite = None
+        
+        # Tile graphics
         self.ground_tile = pygame.image.load("assets/tiles/floor_01.png").convert_alpha()
         self.wall_tile = pygame.image.load("assets/tiles/wall_01.png").convert_alpha()
-        self.player_sprite = None
+
 
         # Groups
         self.visible_sprites = None
@@ -31,21 +37,24 @@ class Level:
                 x = col_index * TILE_SIZE
                 y = row_index * TILE_SIZE
 
+                # Always place a floor tile first
+                floor_tile = Tile((x, y), self.ground_tile)
+                self.tiles.add(floor_tile)
+
+                # Then add wall if needed
                 if cell == "X":
-                    tile = Tile((x, y), self.wall_tile)
-                    self.obstacles.add(tile)
-                elif cell == ".":
-                    tile = Tile((x, y), self.ground_tile)
-                    self.obstacles.add(tile)
+                    wall_tile = Tile((x, y), self.wall_tile)
+                    self.tiles.add(wall_tile)
+                    self.obstacle_sprites.add(wall_tile)
                 elif cell == "P":
-                    self.player_sprite = Player((x + TILE_SIZE // 2, y + TILE_SIZE // 2))
+                    self.player_sprite = Player((x + TILE_SIZE // 2, y + TILE_SIZE // 2), self.obstacle_sprites)
                     # Set map boundaries for player
                     self.player_sprite.map_bounds = pygame.Rect(0, 0, map_width, map_height)
 
         # Camera setup after player created
         self.visible_sprites = CameraGroup(self.player_sprite)
         self.visible_sprites.add(self.player_sprite)
-        self.visible_sprites.add(self.obstacles)
+        self.visible_sprites.add(self.tiles)  # Add all tiles to visible sprites
 
 
     def run(self, dt):
