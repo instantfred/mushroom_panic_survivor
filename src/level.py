@@ -19,6 +19,7 @@ class Level:
         # Tile graphics
         self.ground_tile = pygame.image.load("assets/tiles/floor_01.png").convert_alpha()
         self.wall_tile = pygame.image.load("assets/tiles/wall_01.png").convert_alpha()
+        self.chest_tile = pygame.image.load("assets/tiles/chest_01.png").convert_alpha()
 
         self.build_level()
 
@@ -36,11 +37,15 @@ class Level:
                 floor_tile = Tile((x, y), self.ground_tile)
                 self.tiles.add(floor_tile)
 
-                # Then add wall if needed
+                # Then add other tiles if needed
                 if cell == "X":
                     wall_tile = Tile((x, y), self.wall_tile)
                     self.tiles.add(wall_tile)
                     self.obstacle_sprites.add(wall_tile)
+                elif cell == "C":
+                    chest_tile = Tile((x, y), self.chest_tile)
+                    self.tiles.add(chest_tile)
+                    self.obstacle_sprites.add(chest_tile)  # Make chests solid for now
                 elif cell == "P":
                     self.player_sprite = Player((x + TILE_SIZE // 2, y + TILE_SIZE // 2), self.obstacle_sprites)
                     # Set map boundaries for player
