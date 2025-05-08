@@ -54,7 +54,7 @@ class Weapon:
         # Create progress bar
         progress_width = int(self.cooldown_rect.width * cooldown_progress)
         progress_surface = pygame.Surface((progress_width, self.cooldown_rect.height))
-        progress_surface.fill((0, 255, 0) if cooldown_progress == 1.0 else (255, 0, 0))
+        progress_surface.fill((0, 0, 255) if cooldown_progress == 1.0 else (0, 100, 255))
         
         # Draw both surfaces
         surface.blit(self.cooldown_surface, pos)

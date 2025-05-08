@@ -43,8 +43,8 @@ class Enemy(pygame.sprite.Sprite):
         # Define stats for different enemy types
         stats = {
             'blob': {
-                'health': 100,
-                'speed': 100,
+                'health': 20,
+                'speed': 80,
                 'damage': 10,
                 'attack_range': 50,
                 'attack_cooldown': 1.0,
