@@ -112,7 +112,9 @@ class Level:
 
         # Draw weapon cooldown
         if self.player_sprite:
-            cooldown_pos = (self.player_sprite.rect.x, self.player_sprite.rect.y - 10)
+            # Calculate center position for cooldown bar
+            cooldown_pos = (self.player_sprite.rect.centerx - self.visible_sprites.offset.x - self.player_sprite.weapon.cooldown_rect.width // 2, 
+                          self.player_sprite.rect.y - self.visible_sprites.offset.y - 10)
             self.player_sprite.weapon.draw_cooldown(self.display_surface, cooldown_pos)
 
 
