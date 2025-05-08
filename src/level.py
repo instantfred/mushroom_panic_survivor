@@ -100,10 +100,20 @@ class Level:
         for projectile in self.projectiles:
             if projectile not in self.visible_sprites:
                 self.visible_sprites.add(projectile, layer=3)
+            
+            # Check for collisions with enemies
+            for enemy in self.enemy_sprites:
+                if projectile.rect.colliderect(enemy.rect):
+                    projectile.handle_collision(enemy)
 
         # Update and draw all sprites
         self.visible_sprites.update(dt)
         self.visible_sprites.draw()
+
+        # Draw weapon cooldown
+        if self.player_sprite:
+            cooldown_pos = (self.player_sprite.rect.x, self.player_sprite.rect.y - 10)
+            self.player_sprite.weapon.draw_cooldown(self.display_surface, cooldown_pos)
 
 
 
