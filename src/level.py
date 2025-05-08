@@ -16,6 +16,7 @@ class Level:
         self.visible_sprites = None                    # Camera group for rendering
         self.player_sprite = None
         self.enemy_sprites = pygame.sprite.Group()     # Enemy sprites
+        self.projectiles = pygame.sprite.Group()       # Player projectiles
         
         # Tile graphics
         self.ground_tile = pygame.image.load("assets/tiles/floor_01.png").convert_alpha()
@@ -53,7 +54,7 @@ class Level:
                     self.tiles.add(chest_tile)
                     self.obstacle_sprites.add(chest_tile)  # Make chests solid for now
                 elif cell == "P":
-                    self.player_sprite = Player((x + TILE_SIZE // 2, y + TILE_SIZE // 2), self.obstacle_sprites)
+                    self.player_sprite = Player((x + TILE_SIZE // 2, y + TILE_SIZE // 2), self.obstacle_sprites, self.projectiles)
                     # Set map boundaries for player
                     self.player_sprite.map_bounds = pygame.Rect(0, 0, map_width, map_height)
                 elif cell == "E":
@@ -70,6 +71,10 @@ class Level:
         self.visible_sprites.add(self.player_sprite, layer=2)
         for enemy in self.enemy_sprites:
             self.visible_sprites.add(enemy, layer=2)
+
+        # Add projectiles to layer 3
+        for projectile in self.projectiles:
+            self.visible_sprites.add(projectile, layer=3)    
 
     def spawn_enemy(self):
         if not self.enemy_spawn_points:
@@ -90,6 +95,11 @@ class Level:
         if self.spawn_timer >= self.spawn_cooldown:
             self.spawn_enemy()
             self.spawn_timer = 0
+
+        # Ensure all projectiles are in the visible_sprites group
+        for projectile in self.projectiles:
+            if projectile not in self.visible_sprites:
+                self.visible_sprites.add(projectile, layer=3)
 
         # Update and draw all sprites
         self.visible_sprites.update(dt)

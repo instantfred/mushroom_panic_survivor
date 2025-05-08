@@ -1,9 +1,10 @@
 import pygame
-from settings import SCREEN_HEIGHT, SCREEN_WIDTH, TILE_SIZE
 import os
+from settings import TILE_SIZE
+from weapon import Weapon
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, obstacles):
+    def __init__(self, pos, obstacles, projectile_group):
         super().__init__()
         self.frame_index = 0
         self.animation_speed = 10  # Frames per second
@@ -27,6 +28,16 @@ class Player(pygame.sprite.Sprite):
         self.status = 'idle'
         self.image = self.animations[self.status][self.frame_index]
         self.rect = self.image.get_rect(center=pos)
+
+        # Set up projectile image and weapon
+        self.projectile_image = pygame.Surface((16, 16))
+        self.projectile_image.fill("yellow")
+
+        self.weapon = Weapon(
+            owner=self,
+            projectile_group=projectile_group,
+            image=self.projectile_image
+        )
 
     def load_animation(self, filename, num_frames):
         path = os.path.join('assets', 'sprites', filename)
@@ -94,4 +105,15 @@ class Player(pygame.sprite.Sprite):
         direction = self.handle_input()
         self.status = "walk" if direction.length() > 0 else "idle"
         self.move_and_collide(direction, dt)
+        self.auto_attack()
         self.animate(dt)
+
+    def auto_attack(self):
+        # Determine the direction based on player's movement or facing direction
+        direction = self.handle_input()
+        if direction.length() > 0:
+            # Use the movement direction
+            self.weapon.shoot(direction=(direction.x, direction.y))
+        else:
+            # Use the facing direction (left or right)
+            self.weapon.shoot(direction=(-1, 0) if self.facing_left else (1, 0))
