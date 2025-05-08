@@ -13,6 +13,7 @@ class Player(pygame.sprite.Sprite):
         self.facing_left = False
         self.map_bounds = None  # Will be set by Level class
         self.obstacles = obstacles
+        self.last_direction = (1, 0)  # Default to right direction
 
         # Load and slice animations
         self.animations = {
@@ -63,6 +64,7 @@ class Player(pygame.sprite.Sprite):
 
         if direction.length() > 0:
             direction = direction.normalize()
+            self.last_direction = (direction.x, direction.y)  # Store the last valid direction
         return direction
 
     def move_and_collide(self, direction, dt):
@@ -109,11 +111,11 @@ class Player(pygame.sprite.Sprite):
         self.animate(dt)
 
     def auto_attack(self):
-        # Determine the direction based on player's movement or facing direction
+        # Determine the direction based on player's movement or last direction
         direction = self.handle_input()
         if direction.length() > 0:
             # Use the movement direction
             self.weapon.shoot(direction=(direction.x, direction.y))
         else:
-            # Use the facing direction (left or right)
-            self.weapon.shoot(direction=(-1, 0) if self.facing_left else (1, 0))
+            # Use the last movement direction
+            self.weapon.shoot(direction=self.last_direction)
