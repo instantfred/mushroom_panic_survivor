@@ -117,12 +117,15 @@ class Level:
         self.visible_sprites.update(dt)
         self.visible_sprites.draw()
 
-        # Draw weapon cooldown
+        # Draw weapon cooldown and health bar
         if self.player_sprite:
             # Calculate center position for cooldown bar
             cooldown_pos = (self.player_sprite.rect.centerx - self.visible_sprites.offset.x - self.player_sprite.weapon.cooldown_rect.width // 2, 
                           self.player_sprite.rect.y - self.visible_sprites.offset.y - 10)
             self.player_sprite.weapon.draw_cooldown(self.display_surface, cooldown_pos)
+            
+            # Draw health bar
+            self.player_sprite.draw_health_bar(self.display_surface, self.visible_sprites.offset)
 
 
 

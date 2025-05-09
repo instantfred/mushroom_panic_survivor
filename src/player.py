@@ -22,6 +22,11 @@ class Player(pygame.sprite.Sprite):
         self.hurt_timer = 0
         self.invincibility_duration = 0.3  # seconds of invincibility after taking damage
 
+        # Health bar attributes
+        self.health_bar_width = 50
+        self.health_bar_height = 5
+        self.health_bar_rect = pygame.Rect(0, 0, self.health_bar_width, self.health_bar_height)
+
         # Load and slice animations
         self.animations = {
             'idle': self.load_animation('player_idle.png', 9),
@@ -146,3 +151,22 @@ class Player(pygame.sprite.Sprite):
         else:
             # Use the last movement direction
             self.weapon.shoot(direction=self.last_direction)
+
+    def draw_health_bar(self, surface, offset):
+        # Calculate health bar position (centered below player)
+        health_bar_pos = (
+            self.rect.centerx - offset.x - self.health_bar_width // 2,
+            self.rect.bottom - offset.y + 3  # pixels below the player
+        )
+        
+        # Draw background (gray)
+        pygame.draw.rect(surface, (100, 100, 100), 
+                        (*health_bar_pos, self.health_bar_width, self.health_bar_height))
+        
+        # Calculate current health width
+        current_health_width = int((self.health / self.max_health) * self.health_bar_width)
+        
+        # Draw health (red)
+        if current_health_width > 0:
+            pygame.draw.rect(surface, (255, 0, 0),
+                           (*health_bar_pos, current_health_width, self.health_bar_height))
