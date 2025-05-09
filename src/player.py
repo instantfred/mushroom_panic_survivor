@@ -50,8 +50,8 @@ class Player(pygame.sprite.Sprite):
             owner=self,
             projectile_group=projectile_group,
             effect_type="blue_orb",
-            cooldown=500,  # 0.5 seconds between shots
-            speed=300,
+            cooldown=2000,  # 2 seconds between shots
+            speed=250,
             lifespan=2000, # 2 seconds lifespan
             damage=10,
             weapon_type="effect"
