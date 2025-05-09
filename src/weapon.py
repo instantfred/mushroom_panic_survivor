@@ -1,8 +1,9 @@
 import pygame
 from projectile import Projectile
+from effect_projectile import EffectProjectile
 
 class Weapon:
-    def __init__(self, owner, projectile_group, image, cooldown=500, speed=300, lifespan=2000, damage=10, weapon_type="basic"):
+    def __init__(self, owner, projectile_group, image=None, cooldown=500, speed=300, lifespan=2000, damage=10, weapon_type="basic", effect_type=None):
         self.owner = owner  # the player or enemy using the weapon
         self.projectile_group = projectile_group
         self.image = image
@@ -11,6 +12,7 @@ class Weapon:
         self.lifespan = lifespan
         self.damage = damage
         self.weapon_type = weapon_type
+        self.effect_type = effect_type
         self.last_shot = 0
         
         # Cooldown visualization
@@ -30,16 +32,28 @@ class Weapon:
         if now - self.last_shot >= self.cooldown:
             self.last_shot = now
             
-            # Create projectile with weapon properties
-            projectile = Projectile(
-                pos=self.owner.rect.center,
-                direction=direction,
-                speed=self.speed,
-                lifespan=self.lifespan,
-                image=self.image,
-                damage=self.damage,
-                weapon_type=self.weapon_type
-            )
+            # Create projectile based on whether we're using effects or basic projectiles
+            if self.effect_type:
+                projectile = EffectProjectile(
+                    pos=self.owner.rect.center,
+                    direction=direction,
+                    speed=self.speed,
+                    lifespan=self.lifespan,
+                    effect_type=self.effect_type,
+                    damage=self.damage,
+                    weapon_type=self.weapon_type
+                )
+            else:
+                projectile = Projectile(
+                    pos=self.owner.rect.center,
+                    direction=direction,
+                    speed=self.speed,
+                    lifespan=self.lifespan,
+                    image=self.image,
+                    damage=self.damage,
+                    weapon_type=self.weapon_type
+                )
+            
             self.projectile_group.add(projectile)
             
             # Play sound if available

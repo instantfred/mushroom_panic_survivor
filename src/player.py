@@ -46,13 +46,15 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=pos)
 
         # Set up projectile image and weapon
-        self.projectile_image = pygame.Surface((16, 16))
-        self.projectile_image.fill("yellow")
-
         self.weapon = Weapon(
             owner=self,
             projectile_group=projectile_group,
-            image=self.projectile_image
+            effect_type="blue_orb",
+            cooldown=500,  # 0.5 seconds between shots
+            speed=300,
+            lifespan=2000, # 2 seconds lifespan
+            damage=10,
+            weapon_type="effect"
         )
 
     def load_animation(self, filename, num_frames):
