@@ -106,6 +106,13 @@ class Level:
                 if projectile.rect.colliderect(enemy.rect):
                     projectile.handle_collision(enemy)
 
+        # Check for collisions between player and enemies
+        if self.player_sprite:
+            for enemy in self.enemy_sprites:
+                if self.player_sprite.rect.colliderect(enemy.rect):
+                    # Player takes damage from enemy
+                    self.player_sprite.take_damage(enemy.stats['damage'])
+
         # Update and draw all sprites
         self.visible_sprites.update(dt)
         self.visible_sprites.draw()

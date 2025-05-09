@@ -15,6 +15,13 @@ class Player(pygame.sprite.Sprite):
         self.obstacles = obstacles
         self.last_direction = (1, 0)  # Default to right direction
 
+        # Health and damage attributes
+        self.max_health = 100
+        self.health = self.max_health
+        self.is_hurt = False
+        self.hurt_timer = 0
+        self.invincibility_duration = 0.3  # seconds of invincibility after taking damage
+
         # Load and slice animations
         self.animations = {
             'idle': self.load_animation('player_idle.png', 9),
@@ -103,7 +110,27 @@ class Player(pygame.sprite.Sprite):
             self.frame_index = 0
         self.image = frames[int(self.frame_index)]
 
+    def take_damage(self, amount):
+        if not self.is_hurt:  # Only take damage if not in invincibility period
+            self.health -= amount
+            self.is_hurt = True
+            self.hurt_timer = self.invincibility_duration
+            # Ensure health doesn't go below 0
+            self.health = max(0, self.health)
+            if self.health <= 0:
+                self.die()
+
+    def die(self):
+        # Handle player death
+        print("Player died!")
+
     def update(self, dt):
+        # Update hurt timer
+        if self.is_hurt:
+            self.hurt_timer -= dt
+            if self.hurt_timer <= 0:
+                self.is_hurt = False
+
         direction = self.handle_input()
         self.status = "walk" if direction.length() > 0 else "idle"
         self.move_and_collide(direction, dt)
