@@ -7,56 +7,76 @@ class EffectProjectile(Projectile):
         self.effect_sheet = pygame.image.load("assets/sprites/effects/blue_effects.png").convert_alpha()
         
         self.effect_properties = {
+            "ice_shuriken": {
+                "row": 4,
+                "frames": 2,
+                "size": (16, 16),
+                "animation_speed": 14,
+                "start_row": 0,
+                "start_col": 7
+            },
+            "ice_loop": {
+                "row": 8,
+                "frames": 2,
+                "size": (16, 16),
+                "animation_speed": 7,
+                "start_row": 0,
+                "start_col": 7
+            },
             "ice_flame": {
                 "row": 0,
                 "frames": 3,
                 "size": (16, 16),
-                "animation_speed": 15
+                "animation_speed": 15,
+                "start_row": 0
             },
             "ice_kunai": {
                 "row": 4,
                 "frames": 3,
                 "size": (16, 16),
-                "animation_speed": 3
+                "animation_speed": 3,
+                "start_row": 0
             },
             "ice_spark": {
                 "row": 7,
                 "frames": 3,
                 "size": (16, 16),
-                "animation_speed": 15
+                "animation_speed": 15,
+                "start_row": 0
             },
-            
-            # Effects starting at column 10
             "fading_fire": {
                 "row": 0,
                 "frames": 3,
                 "size": (16, 16),
                 "animation_speed": 2,
-                "start_col": 10
+                "start_col": 10,
+                "start_row": 0
             },
             "hadouken": {
                 "row": 1,
                 "frames": 2,
                 "size": (16, 16),
                 "animation_speed": 15,
-                "start_col": 10
+                "start_col": 10,
+                "start_row": 0
             },
             "blue_orb": {
                 "row": 7,
                 "frames": 3,
                 "size": (16, 16),
                 "animation_speed": 15,
-                "start_col": 10
+                "start_col": 10,
+                "start_row": 0
             },
-            
             # Multi-row effects
-            "large_blue_orb": {
+            "large_blue_wave": {
                 "row": 1,
                 "frames": 4,
                 "size": (16, 32),  # Double height
                 "animation_speed": 15,
                 "multi_row": True,
-                "start_col": 10
+                "start_col": 10,
+                "start_row": 1
             },
             "large_fire_orb": {
                 "row": 10,
@@ -64,7 +84,8 @@ class EffectProjectile(Projectile):
                 "size": (16, 32),  # Double height
                 "animation_speed": 15,
                 "multi_row": True,
-                "start_col": 10
+                "start_col": 10,
+                "start_row": 4
             }
         }
         
@@ -72,7 +93,7 @@ class EffectProjectile(Projectile):
         props = self.effect_properties[effect_type]
         
         # Load the first frame as the initial image
-        initial_frame = self.load_frame(props["row"], 0, props["size"], props.get("start_col", 0), props.get("multi_row", False))
+        initial_frame = self.load_frame(props["row"], 0, props["size"], props.get("start_col", 0), props.get("multi_row", False), props.get("start_row", 0))
         
         # Initialize the base projectile with the first frame
         super().__init__(pos, direction, speed, lifespan, initial_frame, damage, weapon_type)
@@ -89,14 +110,14 @@ class EffectProjectile(Projectile):
         
         # Load all frames for this effect
         self.animation_frames = [
-            self.load_frame(props["row"], i, props["size"], self.start_col, self.multi_row)
+            self.load_frame(props["row"], i, props["size"], self.start_col, self.multi_row, self.start_row)
             for i in range(props["frames"])
         ]
 
-    def load_frame(self, row, frame_index, size, start_col=0, multi_row=False):
+    def load_frame(self, row, frame_index, size, start_col=0, multi_row=False, start_row=0):
         """Load a single frame from the sprite sheet."""
         x = (start_col + frame_index) * size[0]
-        y = row * size[1]
+        y = (start_row + row) * size[1]
         
         if multi_row:
             # For multi-row effects, combine two rows
