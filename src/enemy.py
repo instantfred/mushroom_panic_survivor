@@ -18,6 +18,12 @@ class Enemy(pygame.sprite.Sprite):
         self.animation_speed = self.stats['animation_speed']
         self.facing_left = False
         
+        # Flash effect properties
+        self.is_flashing = False
+        self.flash_timer = 0
+        self.flash_duration = 0.2  # Duration of the flash effect
+        self.flash_color = (255, 255, 255)  # Default white flash
+        
         # Load animations
         self.animations = {
             'idle': self.load_animation('blob_spritesheet.png', 0, 2),
@@ -113,6 +119,12 @@ class Enemy(pygame.sprite.Sprite):
                 self.is_hurt = False
                 self.status = 'idle'
         
+        # Update flash timer
+        if self.is_flashing:
+            self.flash_timer -= dt
+            if self.flash_timer <= 0:
+                self.is_flashing = False
+        
         # Update animation frame
         frames = self.animations[self.status]
         self.frame_index += self.animation_speed * dt
@@ -128,14 +140,36 @@ class Enemy(pygame.sprite.Sprite):
         frame = frames[int(self.frame_index)]
         if self.facing_left:
             frame = pygame.transform.flip(frame, True, False)
-        self.image = frame
+            
+        # Apply flash effect if active
+        if self.is_flashing:
+            # Create a copy of the current frame
+            flash_image = frame.copy()
+            # Create a colored surface with the same size
+            flash_surface = pygame.Surface(flash_image.get_size(), pygame.SRCALPHA)
+            flash_surface.fill((*self.flash_color, 128))
+            # Blend the colored surface with the original image
+            flash_image.blit(flash_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+            # Apply the flash effect
+            self.image = flash_image
+        else:
+            self.image = frame
 
     def take_damage(self, amount):
         self.health -= amount
         self.is_hurt = True
         self.hurt_timer = 0.5  # Hurt animation duration
         self.status = 'hurt'
+        
+        # Set up flash effect
+        self.is_flashing = True
+        self.flash_timer = self.flash_duration
+        self.flash_color = (255, 255, 255)  # White flash for damage
+        
         if self.health <= 0:
+            # Red flash for death
+            self.flash_color = (255, 0, 0)
+            self.flash_timer = self.flash_duration
             self.kill()
 
     def update(self, dt):
