@@ -24,6 +24,11 @@ class Enemy(pygame.sprite.Sprite):
         self.flash_duration = 0.2  # Duration of the flash effect
         self.flash_color = (255, 255, 255)  # Default white flash
         
+        # Knockback properties
+        self.knockback_velocity = pygame.Vector2(0, 0)
+        self.knockback_friction = 0.4  # Reduced friction for longer knockback
+        self.knockback_strength = 300  # Increased knockback force
+        
         # Load animations
         self.animations = {
             'idle': self.load_animation('blob_spritesheet.png', 0, 2),
@@ -99,9 +104,21 @@ class Enemy(pygame.sprite.Sprite):
         return direction
 
     def move_towards_player(self, dt):
-        if self.is_hurt:
+        # Apply knockback movement if there is any
+        if self.knockback_velocity.length() > 1:
+            self.rect.x += self.knockback_velocity.x * dt
+            self.rect.y += self.knockback_velocity.y * dt
+            
+            # Apply friction to knockback
+            self.knockback_velocity *= self.knockback_friction
+            
+            # If knockback is very small, reset it
+            if self.knockback_velocity.length() < 1:
+                self.knockback_velocity = pygame.Vector2(0, 0)
+                self.is_hurt = False
             return
 
+        # Normal movement towards player
         direction = self.get_direction_to_player()
         
         # Update facing direction
@@ -131,7 +148,6 @@ class Enemy(pygame.sprite.Sprite):
         if self.frame_index >= len(frames):
             self.frame_index = 0
             if self.status == 'hurt':
-                self.is_hurt = False
                 self.status = 'idle'
             elif self.status == 'attack':
                 self.status = 'idle'
@@ -166,6 +182,19 @@ class Enemy(pygame.sprite.Sprite):
         self.flash_timer = self.flash_duration
         self.flash_color = (255, 255, 255)  # White flash for damage
         
+        # Calculate knockback direction (away from player)
+        knockback_direction = pygame.Vector2(
+            self.rect.centerx - self.player.rect.centerx,
+            self.rect.centery - self.player.rect.centery
+        )
+        if knockback_direction.length() > 0:
+            knockback_direction = knockback_direction.normalize()
+            print(f"Applying knockback: direction={knockback_direction}, strength={self.knockback_strength}")
+        
+        # Apply knockback
+        self.knockback_velocity = knockback_direction * self.knockback_strength
+        print(f"Initial knockback velocity: {self.knockback_velocity}")
+        
         if self.health <= 0:
             # Red flash for death
             self.flash_color = (255, 0, 0)
@@ -187,7 +216,7 @@ class Enemy(pygame.sprite.Sprite):
         if distance_to_player <= self.attack_range and self.attack_cooldown <= 0:
             self.status = 'attack'
             self.attack_cooldown = self.stats['attack_cooldown']
-        elif not self.is_hurt:
+        elif not self.is_hurt:  # Only change status if not hurt
             self.status = 'walk' if distance_to_player > self.attack_range else 'idle'
 
         # Move and animate
