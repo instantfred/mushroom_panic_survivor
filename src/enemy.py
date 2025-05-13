@@ -5,10 +5,11 @@ import os
 SPRITE_SIZE = 32  # Match actual frame size
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, pos, player, enemy_type='blob'):
+    def __init__(self, pos, player, visible_sprites, enemy_type='blob'):
         super().__init__()
         self.player = player
         self.enemy_type = enemy_type
+        self.visible_sprites = visible_sprites  # Store reference to visible_sprites
         
         # Load enemy stats based on type
         self.stats = self.get_enemy_stats()
@@ -196,9 +197,10 @@ class Enemy(pygame.sprite.Sprite):
         print(f"Initial knockback velocity: {self.knockback_velocity}")
         
         if self.health <= 0:
-            # Red flash for death
-            self.flash_color = (255, 0, 0)
-            self.flash_timer = self.flash_duration
+            # Create disintegration effect before killing the enemy
+            from disintegration_effect import DisintegrationEffect
+            effect = DisintegrationEffect(self, duration=0.8)  # Slightly faster than player death
+            self.visible_sprites.add(effect, layer=3)  # Add to visible sprites with high layer
             self.kill()
 
     def update(self, dt):

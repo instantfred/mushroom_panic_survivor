@@ -34,6 +34,24 @@ class Level:
         # Calculate map boundaries
         map_width = len(level_map[0]) * TILE_SIZE
         map_height = len(level_map) * TILE_SIZE
+        self.map_bounds = pygame.Rect(0, 0, map_width, map_height)
+
+        # Create player first
+        self.player_sprite = Player(
+            pos=(map_width // 2, map_height // 2),
+            obstacles=self.obstacle_sprites,
+            projectile_group=self.projectiles,
+            visible_sprites=None  # Will be set after camera group is created
+        )
+
+        # Create camera group with player
+        self.visible_sprites = CameraGroup(self.player_sprite)
+        
+        # Now set the visible_sprites reference in player
+        self.player_sprite.visible_sprites = self.visible_sprites
+        
+        # Add player to visible sprites
+        self.visible_sprites.add(self.player_sprite, layer=2)
 
         for row_index, row in enumerate(level_map):
             for col_index, cell in enumerate(row):
@@ -53,22 +71,15 @@ class Level:
                     chest_tile = Tile((x, y), self.chest_tile)
                     self.tiles.add(chest_tile)
                     self.obstacle_sprites.add(chest_tile)  # Make chests solid for now
-                elif cell == "P":
-                    self.player_sprite = Player((x + TILE_SIZE // 2, y + TILE_SIZE // 2), self.obstacle_sprites, self.projectiles)
-                    # Set map boundaries for player
-                    self.player_sprite.map_bounds = pygame.Rect(0, 0, map_width, map_height)
                 elif cell == "E":
                     # Store enemy spawn points
                     self.enemy_spawn_points.append((x + TILE_SIZE // 2, y + TILE_SIZE // 2))
 
-        # Camera setup after player created
-        self.visible_sprites = CameraGroup(self.player_sprite)
         # Add tiles to layer 0
         for tile in self.tiles:
             self.visible_sprites.add(tile, layer=0)
 
-        # Add player and enemies to layer 2
-        self.visible_sprites.add(self.player_sprite, layer=2)
+        # Add enemies to layer 2
         for enemy in self.enemy_sprites:
             self.visible_sprites.add(enemy, layer=2)
 
@@ -85,7 +96,12 @@ class Level:
         spawn_pos = random.choice(self.enemy_spawn_points)
         
         # Create new enemy
-        enemy = Enemy(spawn_pos, self.player_sprite)
+        enemy = Enemy(
+            pos=spawn_pos,
+            player=self.player_sprite,
+            visible_sprites=self.visible_sprites,
+            enemy_type='blob'
+        )
         self.enemy_sprites.add(enemy)
         self.visible_sprites.add(enemy, layer=2)
 

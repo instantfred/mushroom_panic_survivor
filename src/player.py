@@ -4,7 +4,7 @@ from settings import TILE_SIZE
 from weapon import Weapon
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, obstacles, projectile_group):
+    def __init__(self, pos, obstacles, projectile_group, visible_sprites):
         super().__init__()
         self.frame_index = 0
         self.animation_speed = 10  # Frames per second
@@ -14,6 +14,7 @@ class Player(pygame.sprite.Sprite):
         self.map_bounds = None  # Will be set by Level class
         self.obstacles = obstacles
         self.last_direction = (1, 0)  # Default to right direction
+        self.visible_sprites = visible_sprites  # Store reference to visible_sprites
 
         # Health and damage attributes
         self.max_health = 100
@@ -151,8 +152,11 @@ class Player(pygame.sprite.Sprite):
                 self.die()
 
     def die(self):
-        # Handle player death
-        print("Player died!")
+        # Create disintegration effect before killing the player
+        from disintegration_effect import DisintegrationEffect
+        effect = DisintegrationEffect(self, duration=1.0)
+        self.visible_sprites.add(effect, layer=3)  # Add to visible sprites with high layer
+        self.kill()
 
     def update(self, dt):
         # Update hurt timer
